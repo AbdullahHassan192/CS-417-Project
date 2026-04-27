@@ -6,6 +6,7 @@ career progression, and skill relevance.
 """
 from __future__ import annotations
 
+from datetime import datetime
 import logging
 import re
 from typing import Any, Dict, List, Optional
@@ -349,14 +350,8 @@ def generate_employment_assessment(
         timeline["gaps"], edu_records, exp_records
     )
 
-    # Total years of experience
-    total_years = 0.0
-    for r in exp_records:
-        if r.get("duration_years") is not None and r["duration_years"] > 0:
-            total_years += r["duration_years"]
-        elif r.get("start_year"):
-            # Ongoing role
-            total_years += max(0, 2026 - r["start_year"])
+    # Total years of experience (union coverage, no double-counting overlaps)
+    total_years = _calculate_unique_experience_years(exp_records)
 
     # Experience level classification
     exp_level = _classify_experience_level(total_years)
@@ -535,3 +530,42 @@ def _empty_employment_assessment() -> Dict[str, Any]:
         "role_classifications": [],
         "narrative_summary": "No professional experience records available.",
     }
+
+
+def _calculate_unique_experience_years(
+    experience_records: List[Dict[str, Any]],
+) -> float:
+    """
+    Calculate non-overlapping years of experience.
+
+    Each role contributes [start_year, end_year) coverage.
+    Ongoing roles use current year as end bound.
+    """
+    if not experience_records:
+        return 0.0
+
+    current_year = datetime.now().year
+    intervals: List[tuple[int, int]] = []
+
+    for rec in experience_records:
+        start = rec.get("start_year")
+        end = rec.get("end_year") or current_year
+        if start is None:
+            continue
+        if end <= start:
+            continue
+        intervals.append((int(start), int(end)))
+
+    if not intervals:
+        return 0.0
+
+    intervals.sort(key=lambda x: x[0])
+    merged: List[List[int]] = []
+    for start, end in intervals:
+        if not merged or start > merged[-1][1]:
+            merged.append([start, end])
+        else:
+            merged[-1][1] = max(merged[-1][1], end)
+
+    covered_years = sum(end - start for start, end in merged)
+    return float(max(0, covered_years))

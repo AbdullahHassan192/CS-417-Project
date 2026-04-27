@@ -139,6 +139,21 @@ a { color: inherit; text-decoration: none; }
 .page-title { font-size: 1.4rem; font-weight: 700; }
 .page-subtitle { font-size: 0.82rem; color: var(--clr-text-muted); margin-top: 2px; }
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+.candidate-page-header {
+  align-items: center;
+  gap: 18px;
+}
+.candidate-title-block {
+  flex: 1;
+  min-width: 0;
+}
+.candidate-score-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
 /* ── Cards ── */
 .card {
@@ -408,8 +423,18 @@ select option { background: var(--clr-surface); }
   .main-content { margin-left: 0; }
   .stats-row, .cand-stats { grid-template-columns: 1fr 1fr; }
   .two-col, .three-col { grid-template-columns: 1fr; }
+  .candidate-page-header {
+    align-items: flex-start;
+  }
 }
 @media (max-width: 600px) {
   .stats-row, .cand-stats { grid-template-columns: 1fr; }
   .page { padding: 16px; }
+  .candidate-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .candidate-score-panel {
+    align-self: flex-end;
+  }
 }

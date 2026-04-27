@@ -44,13 +44,13 @@ export default function CandidateDetailPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div>
+      <div className="page-header candidate-page-header">
+        <div className="candidate-title-block">
           <Link to="/candidates" style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)' }}>← Back to Candidates</Link>
           <h1 className="page-title">{pi.full_name || 'Unknown Candidate'}</h1>
           <p className="page-subtitle">{pi.source_file} • {pi.post_applied_for || 'Position not specified'}</p>
         </div>
-        <div style={{ textAlign: 'center' }}>
+        <div className="candidate-score-panel">
           <div className={`score-circle ${assessment.overall_tier || 'below_average'}`}>
             {(assessment.overall_score || 0).toFixed(1)}
             <small>/100</small>
@@ -155,6 +155,21 @@ function EducationTab({ edu }) {
   const school = edu.school_records || []
   const higher = edu.higher_education_records || []
   const gaps = edu.gaps || []
+  const institutionQuality = edu.institution_quality || []
+
+  function formatGapDuration(months) {
+    const total = Number(months || 0)
+    const years = Math.floor(total / 12)
+    const remMonths = total % 12
+    if (years > 0 && remMonths > 0) return `${years} year${years > 1 ? 's' : ''} ${remMonths} month${remMonths > 1 ? 's' : ''}`
+    if (years > 0) return `${years} year${years > 1 ? 's' : ''}`
+    return `${remMonths} month${remMonths !== 1 ? 's' : ''}`
+  }
+
+  function formatGapType(gapType) {
+    if (!gapType) return 'Education Gap'
+    return gapType.replace(/_to_/gi, ' → ').replace(/_/g, ' ')
+  }
 
   return (
     <div>
@@ -215,15 +230,53 @@ function EducationTab({ edu }) {
         <div className="card">
           <h3 className="card-title">Educational Gaps</h3>
           {gaps.map((g, i) => (
-            <div key={i} className="detail-item">
+            <div key={i} className="detail-item" style={{ alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{g.gap_type?.replace(/_/g, ' → ')}</div>
-                <div style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)' }}>{g.duration_months} months ({g.start_date} – {g.end_date})</div>
+                <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{formatGapType(g.gap_type)}</div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)' }}>
+                  {formatGapDuration(g.duration_months)} ({g.start_date} – {g.end_date})
+                </div>
+                {g.justification_detail && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-secondary)', marginTop: '4px' }}>
+                    {g.justification_detail}
+                  </div>
+                )}
               </div>
               <div>
                 {g.is_flagged && !g.justified_by_experience && <span className="severity critical">Unexplained</span>}
                 {g.is_flagged && g.justified_by_experience && <span className="severity useful">Justified</span>}
                 {!g.is_flagged && <span style={{ color: 'var(--clr-success)', fontSize: '0.8125rem' }}>✓ OK</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Institution Rankings */}
+      {institutionQuality.length > 0 && (
+        <div className="card" style={{ marginTop: 'var(--space-md)' }}>
+          <h3 className="card-title">Institution Rankings (THE / QS)</h3>
+          {institutionQuality.map((inst, i) => (
+            <div key={i} className="detail-item" style={{ alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                  {inst.institution_name || 'Unknown Institution'}
+                </div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)' }}>
+                  THE: {inst.the_rank ? `#${inst.the_rank}` : 'Unavailable'}
+                  {' • '}
+                  QS: {inst.qs_rank ? `#${inst.qs_rank}` : 'Unavailable'}
+                </div>
+                {inst.unavailable_reason && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-secondary)', marginTop: '4px' }}>
+                    {inst.unavailable_reason}
+                  </div>
+                )}
+              </div>
+              <div>
+                <span className={`severity ${inst.ranking_status === 'both_available' ? 'useful' : inst.ranking_status === 'the_only' || inst.ranking_status === 'qs_only' ? 'important' : 'critical'}`}>
+                  {(inst.ranking_status || 'unavailable').replace(/_/g, ' ')}
+                </span>
               </div>
             </div>
           ))}

@@ -17,6 +17,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
+import pandas as pd
+
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -44,6 +46,49 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+def _clean_cell(value: Any) -> Any:
+    """Convert pandas NaN/NA values to None for JSON output."""
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except Exception:
+        pass
+    return value
+
+
+def _df_to_records(df: Any) -> list[Dict[str, Any]]:
+    if df is None or getattr(df, "empty", True):
+        return []
+
+    records: list[Dict[str, Any]] = []
+    for _, row in df.iterrows():
+        item = {col: _clean_cell(row.get(col)) for col in df.columns}
+        records.append(item)
+    return records
+
+
+def build_research_assessment(candidate_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Partial M2 implementation: expose extracted research artifacts only."""
+    publications = _df_to_records(candidate_data.get("publications"))
+    books = _df_to_records(candidate_data.get("books"))
+    patents = _df_to_records(candidate_data.get("patents"))
+
+    return {
+        "total_publications": len(publications),
+        "total_books": len(books),
+        "total_patents": len(patents),
+        "publications": publications,
+        "books": books,
+        "patents": patents,
+        "narrative_summary": (
+            "Research section currently shows extracted publications, books, and "
+            "patents from M1 outputs (partial M2 implementation)."
+        ),
+    }
 
 
 def process_single_candidate(
@@ -74,6 +119,9 @@ def process_single_candidate(
         experience_df=candidate_data.get("experience"),
         education_df=candidate_data.get("education"),
     )
+
+    # 2.5 Research/publication assessment (partial M2 visibility implementation)
+    research_assessment = build_research_assessment(candidate_data)
 
     # 3. Missing info detection
     missing_fields = detect_missing_information(
@@ -125,6 +173,7 @@ def process_single_candidate(
         "personal_info": personal_info,
         "educational_assessment": edu_assessment,
         "employment_assessment": emp_assessment,
+        "research_assessment": research_assessment,
         "timeline_analysis": {
             "overlaps": emp_assessment.get("timeline_overlaps", []),
             "gaps": emp_assessment.get("timeline_gaps", []),

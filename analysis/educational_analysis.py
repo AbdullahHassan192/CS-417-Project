@@ -6,13 +6,24 @@ Reuses M1 normalization functions — does NOT duplicate them.
 """
 from __future__ import annotations
 
+import json
 import logging
+import os
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
+from dotenv import load_dotenv
+
+try:
+    from google import genai
+except Exception:  # pragma: no cover - handled at runtime
+    genai = None
 
 logger = logging.getLogger(__name__)
+
+# Load .env so direct CLI runs can still access GEMINI_API_KEY.
+load_dotenv()
 
 # ── Degree-level ordering for progression analysis ──────────────────────────
 DEGREE_ORDER = {
@@ -25,6 +36,26 @@ STAGE_ORDER = {
     "sse": 1, "hssc": 2, "ug": 3, "pg": 4,
     "doctorate": 5, "postdoc": 6, "other": 0,
 }
+
+# Expected time-to-completion thresholds (in years) by current level.
+DEGREE_DURATION_THRESHOLDS = {
+    "hssc": 2,
+    "ug": 4,
+    "bachelors": 4,
+    "pg": 3,
+    "masters": 3,
+    "mphil": 3,
+    "phd": 5,
+    "doctorate": 5,
+    "postdoc": 5,
+}
+
+RANKING_REFERENCE_URLS = {
+    "the": "https://www.timeshighereducation.com/worlduniversity-rankings",
+    "qs": "https://www.topuniversities.com/world-university-rankings",
+}
+
+_RANKING_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
 # ── 1.1  extract_school_education ───────────────────────────────────────────
@@ -219,18 +250,46 @@ def assess_institution_quality(
     institution_name: Optional[str],
 ) -> Dict[str, Any]:
     """
-    Placeholder for institutional quality assessment.
+    Return ranking status for one institution.
 
-    Actual ranking API integration (THE, QS) deferred to M3.
-    Returns default 'unknown' ranking status.
+    Rankings are enriched via LLM with strict instructions to avoid guessing.
+    If unavailable or uncertain, values remain null and status is transparent.
     """
+    cleaned_name = _clean_institution_name(institution_name)
+    if not cleaned_name:
+        return {
+            "institution_name": institution_name,
+            "the_rank": None,
+            "the_score": None,
+            "qs_rank": None,
+            "qs_score": None,
+            "ranking_status": "unavailable",
+            "unavailable_reason": "No institution name provided.",
+            "references": RANKING_REFERENCE_URLS,
+        }
+
+    rankings = _extract_rankings_for_institutions([cleaned_name])
+    ranked = rankings.get(cleaned_name, {})
+
+    the_rank = _safe_int(ranked.get("the_rank"))
+    qs_rank = _safe_int(ranked.get("qs_rank"))
+    the_score = _rank_to_quality_score(the_rank)
+    qs_score = _rank_to_quality_score(qs_rank)
+    status = _ranking_status_from_record(the_rank, qs_rank, ranked.get("status"))
+
+    reason = ranked.get("reason")
+    if not reason and status in {"unavailable", "unknown"}:
+        reason = "No reliable THE/QS rank found for this institution."
+
     return {
-        "institution_name": institution_name,
-        "the_rank": None,
-        "the_score": None,
-        "qs_rank": None,
-        "qs_score": None,
-        "ranking_status": "unknown",
+        "institution_name": cleaned_name,
+        "the_rank": the_rank,
+        "the_score": the_score,
+        "qs_rank": qs_rank,
+        "qs_score": qs_score,
+        "ranking_status": status,
+        "unavailable_reason": reason,
+        "references": RANKING_REFERENCE_URLS,
     }
 
 
@@ -311,7 +370,6 @@ def analyze_educational_progression(
 def detect_educational_gaps(
     education_records: List[Dict[str, Any]],
     experience_records: Optional[List[Dict[str, Any]]] = None,
-    gap_threshold_months: int = 12,
 ) -> List[Dict[str, Any]]:
     """
     Identify gaps between education stages.
@@ -322,39 +380,57 @@ def detect_educational_gaps(
 
     sorted_recs = sorted(
         education_records,
-        key=lambda r: _best_year(r) or 9999,
+        key=lambda r: _safe_int(r.get("passing_year")) or _best_year(r) or 9999,
     )
 
     gaps: List[Dict[str, Any]] = []
     for i in range(len(sorted_recs) - 1):
-        end_year = sorted_recs[i].get("completion_year") or sorted_recs[i].get("passing_year")
-        start_year = sorted_recs[i + 1].get("admission_year") or sorted_recs[i + 1].get("passing_year")
+        prev_rec = sorted_recs[i]
+        curr_rec = sorted_recs[i + 1]
 
-        if end_year is None or start_year is None:
+        prev_year = _safe_int(prev_rec.get("passing_year") or prev_rec.get("completion_year"))
+        curr_year = _safe_int(curr_rec.get("passing_year") or curr_rec.get("completion_year"))
+
+        if prev_year is None or curr_year is None:
             continue
 
-        end_year = int(end_year)
-        start_year = int(start_year)
-        gap_months = (start_year - end_year) * 12
-
-        if gap_months <= 0:
+        completion_months = (curr_year - prev_year) * 12
+        if completion_months <= 0:
             continue
 
-        from_level = sorted_recs[i].get("degree_level", "unknown")
-        to_level = sorted_recs[i + 1].get("degree_level", "unknown")
+        curr_level = _normalize_level_for_threshold(curr_rec.get("degree_level"))
+        threshold_years = DEGREE_DURATION_THRESHOLDS.get(curr_level)
+        if threshold_years is None:
+            continue
+
+        threshold_months = threshold_years * 12
+        excess_months = max(0, completion_months - threshold_months)
+        is_flagged = excess_months > 0
+        if not is_flagged:
+            continue
+
+        # Represent only the unexplained/extra duration as the educational gap.
+        gap_start_year = prev_year + threshold_years
+        gap_end_year = curr_year
+
+        from_level = prev_rec.get("degree_level", "unknown")
+        to_level = curr_rec.get("degree_level", "unknown")
         gap_type = f"{from_level}_to_{to_level}"
 
-        # Check if justified by employment
+        # Only flagged excess duration needs external justification.
         justified = False
         justification_detail = None
-        if experience_records:
+        if is_flagged and experience_records:
+            gap_window_start = gap_start_year
+            gap_window_end = gap_end_year
             for exp in experience_records:
                 exp_start = exp.get("start_year")
                 exp_end = exp.get("end_year")
-                if exp_start and exp_end:
+                if exp_start:
                     exp_s = int(exp_start)
-                    exp_e = int(exp_end)
-                    if exp_s <= start_year and exp_e >= end_year:
+                    exp_e = int(exp_end) if exp_end else curr_year
+                    overlaps = exp_s <= gap_window_end and exp_e >= gap_window_start
+                    if overlaps:
                         justified = True
                         justification_detail = (
                             f"Employed at {exp.get('organization', 'N/A')} "
@@ -365,12 +441,17 @@ def detect_educational_gaps(
 
         gaps.append({
             "gap_type": gap_type,
-            "duration_months": gap_months,
-            "start_date": end_year,
-            "end_date": start_year,
-            "is_flagged": gap_months > gap_threshold_months,
+            "duration_months": excess_months,
+            "allowed_duration_months": threshold_months,
+            "excess_duration_months": excess_months,
+            "start_date": gap_start_year,
+            "end_date": gap_end_year,
+            "is_flagged": is_flagged,
             "justified_by_experience": justified,
             "justification_detail": justification_detail,
+            "threshold_rule": (
+                f"{to_level.upper()} expected <= {threshold_years} year(s)"
+            ),
         })
 
     return gaps
@@ -402,9 +483,34 @@ def generate_educational_assessment(
     # Gap detection
     gaps = detect_educational_gaps(all_records, exp_records)
 
-    # Institution quality (placeholder)
-    institutions = [r.get("institution_name") for r in all_records if r.get("institution_name")]
+    # Institution quality enrichment (THE + QS ranking checks)
+    institutions = []
+    seen_institutions = set()
+    for r in higher:
+        cleaned = _clean_institution_name(r.get("institution_name"))
+        if not cleaned:
+            continue
+        key = cleaned.lower()
+        if key in seen_institutions:
+            continue
+        seen_institutions.add(key)
+        institutions.append(cleaned)
     inst_quality = [assess_institution_quality(name) for name in institutions]
+
+    ranking_scores: List[float] = []
+    for item in inst_quality:
+        item_scores = [
+            s for s in [item.get("the_score"), item.get("qs_score")]
+            if s is not None
+        ]
+        if item_scores:
+            ranking_scores.append(sum(item_scores) / len(item_scores))
+
+    inst_quality_avg = (
+        round(sum(ranking_scores) / len(ranking_scores), 1)
+        if ranking_scores
+        else None
+    )
 
     # Scores
     all_scores = [
@@ -436,28 +542,29 @@ def generate_educational_assessment(
     # Overall educational strength
     components = []
     if avg_score is not None:
-        components.append(avg_score * 0.35)
+        components.append(avg_score * 0.30)
     else:
-        components.append(50.0 * 0.35)  # default
+        components.append(50.0 * 0.30)  # neutral default
 
-    components.append(progression["progression_score"] * 0.25)
+    components.append(progression["progression_score"] * 0.20)
     components.append(continuity * 0.20)
     components.append(progression["specialization_consistency"] * 0.10)
     components.append(gap_completeness * 0.10)
+    components.append((inst_quality_avg if inst_quality_avg is not None else 50.0) * 0.10)
 
     overall_strength = round(sum(components), 1)
 
     # Narrative
     narrative = _build_education_narrative(
         highest_level, perf_level, avg_score,
-        progression["performance_trend"], len(flagged_gaps),
+        progression["performance_trend"], len(flagged_gaps), inst_quality_avg,
     )
 
     return {
         "overall_educational_strength": overall_strength,
         "academic_performance_level": perf_level,
         "highest_qualification_level": highest_level,
-        "institution_quality_average": None,  # M3
+        "institution_quality_average": inst_quality_avg,
         "academic_consistency_score": round(progression["progression_score"], 1),
         "educational_continuity_score": round(continuity, 1),
         "gap_explanation_completeness": round(gap_completeness, 1),
@@ -469,6 +576,17 @@ def generate_educational_assessment(
         "progression_details": progression["details"],
         "gaps": gaps,
         "institution_quality": inst_quality,
+        "strength_breakdown": {
+            "academic_performance_weight": 0.30,
+            "progression_weight": 0.20,
+            "continuity_weight": 0.20,
+            "specialization_weight": 0.10,
+            "gap_justification_weight": 0.10,
+            "institution_quality_weight": 0.10,
+            "institution_quality_used": (
+                inst_quality_avg if inst_quality_avg is not None else 50.0
+            ),
+        },
         "narrative_summary": narrative,
     }
 
@@ -479,6 +597,16 @@ def _safe_int(val: Any) -> Optional[int]:
     if val is None or (isinstance(val, float) and pd.isna(val)):
         return None
     try:
+        if isinstance(val, str):
+            text = val.strip()
+            if not text:
+                return None
+
+            # Support ranking formats such as "#451", "401-500", "=215", "1,024".
+            match = re.search(r"\d+(?:,\d+)?", text)
+            if match:
+                return int(match.group(0).replace(",", ""))
+
         return int(val)
     except (ValueError, TypeError):
         return None
@@ -544,7 +672,7 @@ def _classify_performance(avg_score: Optional[float]) -> str:
 
 def _build_education_narrative(
     highest: str, level: str, avg: Optional[float],
-    trend: str, flagged_count: int,
+    trend: str, flagged_count: int, institution_quality_avg: Optional[float],
 ) -> str:
     parts = []
     level_names = {
@@ -573,7 +701,235 @@ def _build_education_narrative(
             f"{flagged_count} notable gap(s) in the educational timeline."
         )
 
+    if institution_quality_avg is not None:
+        parts.append(
+            f"Average institutional quality score (THE/QS-based) is "
+            f"{institution_quality_avg:.1f}/100."
+        )
+    else:
+        parts.append(
+            "Institution rankings (THE/QS) are unavailable for one or more "
+            "institutions and are reported transparently as unavailable."
+        )
+
     return " ".join(parts)
+
+
+def _normalize_level_for_threshold(level: Optional[str]) -> str:
+    if not level:
+        return "other"
+    lvl = str(level).strip().lower()
+    alias = {
+        "sse": "ssc",
+        "matric": "ssc",
+        "intermediate": "hssc",
+        "bsc": "ug",
+        "bs": "ug",
+        "ms": "pg",
+        "mba": "pg",
+    }
+    return alias.get(lvl, lvl)
+
+
+def _clean_institution_name(name: Optional[str]) -> Optional[str]:
+    if not name:
+        return None
+    cleaned = str(name).strip()
+    if not cleaned or cleaned.lower() in {"nan", "none", "null"}:
+        return None
+    return re.sub(r"\s+", " ", cleaned)
+
+
+def _rank_to_quality_score(rank: Optional[int], max_rank: int = 2000) -> Optional[float]:
+    if rank is None or rank <= 0:
+        return None
+    clamped = min(rank, max_rank)
+    score = 100.0 * (1.0 - (clamped - 1) / max_rank)
+    return round(max(0.0, min(100.0, score)), 1)
+
+
+def _ranking_status_from_record(
+    the_rank: Optional[int],
+    qs_rank: Optional[int],
+    upstream_status: Optional[str] = None,
+) -> str:
+    if the_rank is not None and qs_rank is not None:
+        return "both_available"
+    if the_rank is not None:
+        return "the_only"
+    if qs_rank is not None:
+        return "qs_only"
+    if upstream_status in {"unavailable", "unknown"}:
+        return upstream_status
+    return "unavailable"
+
+
+def _extract_rankings_for_institutions(
+    institutions: List[str],
+) -> Dict[str, Dict[str, Any]]:
+    unique_names = []
+    seen = set()
+    for name in institutions:
+        cleaned = _clean_institution_name(name)
+        if not cleaned or cleaned in seen:
+            continue
+        seen.add(cleaned)
+        unique_names.append(cleaned)
+
+    if not unique_names:
+        return {}
+
+    results: Dict[str, Dict[str, Any]] = {}
+    missing = []
+    for name in unique_names:
+        if name in _RANKING_CACHE:
+            results[name] = _RANKING_CACHE[name]
+        else:
+            missing.append(name)
+
+    if missing:
+        fetched = _call_gemini_for_rankings(missing)
+        for name in missing:
+            record = fetched.get(name) or {
+                "institution_name": name,
+                "the_rank": None,
+                "qs_rank": None,
+                "status": "unavailable",
+                "reason": "No ranking found from configured sources.",
+            }
+            _RANKING_CACHE[name] = record
+            results[name] = record
+
+    return results
+
+
+def _call_gemini_for_rankings(
+    institutions: List[str],
+) -> Dict[str, Dict[str, Any]]:
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not api_key or genai is None:
+        return {
+            name: {
+                "institution_name": name,
+                "the_rank": None,
+                "qs_rank": None,
+                "status": "unavailable",
+                "reason": "Gemini API key or SDK unavailable.",
+            }
+            for name in institutions
+        }
+
+    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    prompt = (
+        "You are filling university rankings for hiring analytics. "
+        "For each institution, use best-effort lookup and include common aliases "
+        "(abbreviations, campus suffixes, punctuation variants). "
+        "Return THE World University Ranking and QS World University Ranking values "
+        "when available. If not confidently available, return null. "
+        "Never guess fabricated numbers.\n\n"
+        "Important normalization rules:\n"
+        "1) If rank appears as a range (e.g., 401-500), return the lower bound integer (401).\n"
+        "2) If rank has symbols (#, =), return integer only.\n"
+        "3) Match each output row to one provided input institution name.\n\n"
+        "Respond ONLY as a JSON array.\n"
+        "Schema per item: "
+        "{\"institution_name\": str, \"the_rank\": int|null, \"qs_rank\": int|null, "
+        "\"status\": \"both_available\"|\"the_only\"|\"qs_only\"|\"unavailable\"|\"unknown\", "
+        "\"reason\": str|null}.\n"
+        f"Institutions: {json.dumps(institutions)}"
+    )
+
+    try:
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model=model_name,
+            contents=prompt,
+        )
+        text = getattr(response, "text", "") or ""
+        rows = _extract_json_array(text)
+    except Exception as exc:
+        logger.warning("Ranking enrichment request failed: %s", exc)
+        rows = []
+
+    requested_by_norm = {_normalize_institution_key(n): n for n in institutions}
+
+    by_name: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        name = _clean_institution_name(row.get("institution_name"))
+        if not name:
+            continue
+
+        matched = _match_requested_institution_name(name, institutions)
+        key_name = matched or requested_by_norm.get(_normalize_institution_key(name)) or name
+        by_name[key_name] = {
+            "institution_name": key_name,
+            "the_rank": _safe_int(row.get("the_rank")),
+            "qs_rank": _safe_int(row.get("qs_rank")),
+            "status": str(row.get("status") or "unknown"),
+            "reason": row.get("reason"),
+        }
+
+    for name in institutions:
+        if name not in by_name:
+            by_name[name] = {
+                "institution_name": name,
+                "the_rank": None,
+                "qs_rank": None,
+                "status": "unavailable",
+                "reason": "No ranking record returned by enrichment step.",
+            }
+
+    return by_name
+
+
+def _normalize_institution_key(name: str) -> str:
+    key = name.lower().strip()
+    key = re.sub(r"[^a-z0-9\s]", " ", key)
+    key = re.sub(r"\b(university|institute|campus|college|of|the|and)\b", " ", key)
+    key = re.sub(r"\s+", " ", key).strip()
+    return key
+
+
+def _match_requested_institution_name(
+    returned_name: str,
+    requested_names: List[str],
+) -> Optional[str]:
+    ret_key = _normalize_institution_key(returned_name)
+    if not ret_key:
+        return None
+
+    for req in requested_names:
+        req_key = _normalize_institution_key(req)
+        if not req_key:
+            continue
+        if req_key == ret_key or req_key in ret_key or ret_key in req_key:
+            return req
+
+    return None
+
+
+def _extract_json_array(text: str) -> List[Dict[str, Any]]:
+    if not text:
+        return []
+
+    stripped = text.strip()
+    candidates = [stripped]
+
+    # Also try extracting first JSON array from markdown-style wrappers.
+    start = stripped.find("[")
+    end = stripped.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        candidates.append(stripped[start:end + 1])
+
+    for candidate in candidates:
+        try:
+            data = json.loads(candidate)
+            if isinstance(data, list):
+                return [d for d in data if isinstance(d, dict)]
+        except Exception:
+            continue
+
+    return []
 
 
 def _df_to_experience_list(exp_df: pd.DataFrame) -> List[Dict[str, Any]]:
@@ -609,5 +965,14 @@ def _empty_educational_assessment() -> Dict[str, Any]:
         "progression_details": [],
         "gaps": [],
         "institution_quality": [],
+        "strength_breakdown": {
+            "academic_performance_weight": 0.30,
+            "progression_weight": 0.20,
+            "continuity_weight": 0.20,
+            "specialization_weight": 0.10,
+            "gap_justification_weight": 0.10,
+            "institution_quality_weight": 0.10,
+            "institution_quality_used": 50.0,
+        },
         "narrative_summary": "No educational records available for assessment.",
     }

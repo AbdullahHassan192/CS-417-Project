@@ -39,3 +39,6 @@ output/
 # CV Folder/files
 CVs/
 *.pdf
+
+data/
+frontend/node_modules/
