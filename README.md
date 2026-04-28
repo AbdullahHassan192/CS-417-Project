@@ -44,6 +44,13 @@ cd frontend
 npm run dev
 ```
 
+### Quick Health Check
+
+```powershell
+# Backend health check
+curl http://localhost:8000/api/health
+```
+
 ### Optional: Run Analysis Pipeline
 
 ```powershell
