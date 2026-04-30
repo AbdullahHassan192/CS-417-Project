@@ -153,7 +153,7 @@ export default function CandidateDetailPage() {
         <div>
           <Link to="/candidates" className="back-link">← Back</Link>
           <h1 className="page-title">{pi.full_name || 'Unknown Candidate'}</h1>
-          <p className="page-subtitle">{pi.source_file} • {pi.post_applied_for || 'Position not specified'}</p>
+          <p className="page-subtitle">{pi.source_file || 'Source file unavailable'} • {pi.post_applied_for || 'Position not specified'}</p>
           <div className="candidate-action-buttons">
             <button
               className="btn btn-success btn-sm"
