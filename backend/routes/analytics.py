@@ -90,7 +90,12 @@ async def get_dashboard_stats(db: Session = Depends(get_db)):
     total = db.query(Candidate).count()
     avg_score = db.query(func.avg(Candidate.overall_score)).scalar() or 0
     shortlisted = db.query(Candidate).filter(Candidate.overall_score >= 70).count()
-    ratio = f"1:{max(1, round(total / max(shortlisted, 1)))}" if total else "—"
+    if not total:
+        ratio = "—"
+    elif shortlisted == 0:
+        ratio = "1:1"
+    else:
+        ratio = f"1:{max(1, round(total / shortlisted))}"
     total_pubs = db.query(Publication).count()
     total_jobs = db.query(Job).filter(Job.status == "active").count()
 
