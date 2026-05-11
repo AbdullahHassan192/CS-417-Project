@@ -17,8 +17,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
-import pandas as pd
-
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -30,6 +28,7 @@ from analysis.data_loader import (
 )
 from analysis.educational_analysis import generate_educational_assessment
 from analysis.employment_analysis import generate_employment_assessment
+from analysis.research_analysis import generate_research_assessment
 from analysis.missing_info_analysis import (
     detect_missing_information,
     draft_missing_info_email,
@@ -46,49 +45,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-
-def _clean_cell(value: Any) -> Any:
-    """Convert pandas NaN/NA values to None for JSON output."""
-    if value is None:
-        return None
-    try:
-        if pd.isna(value):
-            return None
-    except Exception:
-        pass
-    return value
-
-
-def _df_to_records(df: Any) -> list[Dict[str, Any]]:
-    if df is None or getattr(df, "empty", True):
-        return []
-
-    records: list[Dict[str, Any]] = []
-    for _, row in df.iterrows():
-        item = {col: _clean_cell(row.get(col)) for col in df.columns}
-        records.append(item)
-    return records
-
-
-def build_research_assessment(candidate_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Partial M2 implementation: expose extracted research artifacts only."""
-    publications = _df_to_records(candidate_data.get("publications"))
-    books = _df_to_records(candidate_data.get("books"))
-    patents = _df_to_records(candidate_data.get("patents"))
-
-    return {
-        "total_publications": len(publications),
-        "total_books": len(books),
-        "total_patents": len(patents),
-        "publications": publications,
-        "books": books,
-        "patents": patents,
-        "narrative_summary": (
-            "Research section currently shows extracted publications, books, and "
-            "patents from M1 outputs (partial M2 implementation)."
-        ),
-    }
 
 
 def process_single_candidate(
@@ -120,10 +76,15 @@ def process_single_candidate(
         education_df=candidate_data.get("education"),
     )
 
-    # 2.5 Research/publication assessment (partial M2 visibility implementation)
-    research_assessment = build_research_assessment(candidate_data)
+    # 3. Research assessment
+    research_assessment = generate_research_assessment(
+        publications_df=candidate_data.get("publications"),
+        books_df=candidate_data.get("books"),
+        patents_df=candidate_data.get("patents"),
+        candidate_name=personal_info.get("full_name"),
+    )
 
-    # 3. Missing info detection
+    # 4. Missing info detection
     missing_fields = detect_missing_information(
         candidate_data=candidate_data,
         educational_assessment=edu_assessment,
@@ -144,6 +105,18 @@ def process_single_candidate(
         employment_assessment=emp_assessment,
         missing_summary=missing_summary,
     )
+    research_recruiter = research_assessment.get("recruiter_summary", {})
+    research_strength = research_assessment.get("overall_research_strength", 0)
+    if research_strength >= 70:
+        strengths_concerns["strengths"] = (
+            strengths_concerns.get("strengths", [])
+            + [f"Strong research profile ({research_strength:.1f}/100) with evidence-backed publication analysis"]
+        )[:4]
+    if research_recruiter.get("risk_flags"):
+        strengths_concerns["concerns"] = (
+            strengths_concerns.get("concerns", [])
+            + [research_recruiter["risk_flags"][0]]
+        )[:4]
 
     # 6. Summary report
     summary = generate_candidate_summary(
@@ -189,13 +162,20 @@ def process_single_candidate(
         "overall_score": overall_score_data["overall_score"],
         "overall_tier": overall_score_data["tier"],
         "score_breakdown": overall_score_data.get("score_breakdown", {}),
-        "summary_report": summary.get("quick_profile", ""),
+        "summary_report": (
+            summary.get("quick_profile", "")
+            + (
+                f" Research profile level: {(research_recruiter.get('profile_level') or 'unknown').replace('_', ' ')}."
+                if research_recruiter else ""
+            )
+        ).strip(),
         "recommendation": summary.get("recommendation", ""),
         "strengths": strengths_concerns["strengths"],
         "concerns": strengths_concerns["concerns"],
         "missing_info_email": email_data,
         "educational_narrative": edu_assessment.get("narrative_summary", ""),
         "employment_narrative": emp_assessment.get("narrative_summary", ""),
+        "research_narrative": research_assessment.get("narrative_summary", ""),
     }
 
     return assessment

@@ -6,9 +6,9 @@ career progression, and skill relevance.
 """
 from __future__ import annotations
 
-from datetime import datetime
 import logging
 import re
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -116,8 +116,9 @@ def analyze_timeline_consistency(
     for i in range(len(dated_records)):
         for j in range(i + 1, len(dated_records)):
             ri, rj = dated_records[i], dated_records[j]
-            si, ei = ri["start_year"], ri.get("end_year") or 2026
-            sj, ej = rj["start_year"], rj.get("end_year") or 2026
+            current_year = datetime.now().year
+            si, ei = ri["start_year"], ri.get("end_year") or current_year
+            sj, ej = rj["start_year"], rj.get("end_year") or current_year
 
             if si < ej and sj < ei:  # overlap exists
                 severity = "acceptable"
@@ -162,7 +163,7 @@ def analyze_timeline_consistency(
                 continue
             for exp in dated_records:
                 es = exp["start_year"]
-                ee = exp.get("end_year") or 2026
+                ee = exp.get("end_year") or datetime.now().year
                 if es < edu_end and edu_start < ee:
                     et = exp.get("employment_type", "full_time")
                     if et == "full_time":
@@ -288,14 +289,27 @@ def justify_employment_gaps(
         # Check education overlap
         if education_records and g_start and g_end:
             for edu in education_records:
-                edu_start = edu.get("admission_year")
-                edu_end = edu.get("completion_year") or edu.get("passing_year")
+                edu_start = (
+                    edu.get("admission_year")
+                    or edu.get("completion_year")
+                    or edu.get("passing_year")
+                )
+                edu_end = (
+                    edu.get("completion_year")
+                    or edu.get("passing_year")
+                    or edu.get("admission_year")
+                )
                 if edu_start and edu_end:
-                    if edu_start <= g_end and edu_end >= g_start:
+                    edu_s = int(edu_start)
+                    edu_e = int(edu_end)
+                    if edu_s > edu_e:
+                        edu_s, edu_e = edu_e, edu_s
+                    if edu_s <= g_end and edu_e >= g_start:
                         justification_type = "education"
                         justification_detail = (
                             f"Pursuing {edu.get('degree_title_raw', 'degree')} "
-                            f"at {edu.get('institution_name', 'N/A')}"
+                            f"at {edu.get('institution_name', 'N/A')} "
+                            f"({edu_s}-{edu_e})"
                         )
                         break
 
@@ -350,7 +364,7 @@ def generate_employment_assessment(
         timeline["gaps"], edu_records, exp_records
     )
 
-    # Total years of experience (union coverage, no double-counting overlaps)
+    # Total years of experience (unique merged intervals; no double-counting)
     total_years = _calculate_unique_experience_years(exp_records)
 
     # Experience level classification
@@ -484,6 +498,40 @@ def _build_employment_narrative(
     return " ".join(parts)
 
 
+def _calculate_unique_experience_years(
+    experience_records: List[Dict[str, Any]],
+) -> float:
+    """
+    Merge overlapping job intervals and compute unique experience duration.
+    Keeps timeline entries untouched; only total duration is deduplicated.
+    """
+    current_year = datetime.now().year
+    intervals: List[List[int]] = []
+    for rec in experience_records:
+        start = _safe_int(rec.get("start_year"))
+        end = _safe_int(rec.get("end_year")) or current_year
+        if start is None:
+            continue
+        if end < start:
+            start, end = end, start
+        intervals.append([start, end])
+
+    if not intervals:
+        return 0.0
+
+    intervals.sort(key=lambda x: x[0])
+    merged: List[List[int]] = [intervals[0]]
+    for start, end in intervals[1:]:
+        last = merged[-1]
+        if start <= last[1]:
+            last[1] = max(last[1], end)
+        else:
+            merged.append([start, end])
+
+    total = sum(max(0, end - start) for start, end in merged)
+    return float(round(total, 1))
+
+
 def _edu_df_to_list(df: pd.DataFrame) -> List[Dict[str, Any]]:
     if df is None or df.empty:
         return []
@@ -530,42 +578,3 @@ def _empty_employment_assessment() -> Dict[str, Any]:
         "role_classifications": [],
         "narrative_summary": "No professional experience records available.",
     }
-
-
-def _calculate_unique_experience_years(
-    experience_records: List[Dict[str, Any]],
-) -> float:
-    """
-    Calculate non-overlapping years of experience.
-
-    Each role contributes [start_year, end_year) coverage.
-    Ongoing roles use current year as end bound.
-    """
-    if not experience_records:
-        return 0.0
-
-    current_year = datetime.now().year
-    intervals: List[tuple[int, int]] = []
-
-    for rec in experience_records:
-        start = rec.get("start_year")
-        end = rec.get("end_year") or current_year
-        if start is None:
-            continue
-        if end <= start:
-            continue
-        intervals.append((int(start), int(end)))
-
-    if not intervals:
-        return 0.0
-
-    intervals.sort(key=lambda x: x[0])
-    merged: List[List[int]] = []
-    for start, end in intervals:
-        if not merged or start > merged[-1][1]:
-            merged.append([start, end])
-        else:
-            merged[-1][1] = max(merged[-1][1], end)
-
-    covered_years = sum(end - start for start, end in merged)
-    return float(max(0, covered_years))

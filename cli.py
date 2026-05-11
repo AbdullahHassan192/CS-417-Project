@@ -30,8 +30,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        default="gemini-3-flash",
-        help="Gemini model name (default: gemini-2.5-flash).",
+        default="gemini-3.1-flash-lite-preview",
+        help="Gemini model name (default: gemini-3.1-flash-lite-preview).",
     )
     parser.add_argument(
         "--api-key",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { getCandidateList } from '../services/api'
+import { getCandidateList, deleteCandidate, updateCandidateStatus } from '../services/api'
 
 export default function CandidateListPage() {
   const [candidates, setCandidates] = useState([])
@@ -10,18 +10,37 @@ export default function CandidateListPage() {
   const [sortBy, setSortBy] = useState('overall_score')
   const [sortOrder, setSortOrder] = useState('desc')
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [deletingId, setDeletingId] = useState(null)
+  const [updatingId, setUpdatingId] = useState(null)
+  const [shortlistCount, setShortlistCount] = useState(0)
+  const [unreviewedCount, setUnreviewedCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  useEffect(() => { loadCandidates() }, [page, sortBy, sortOrder])
+  useEffect(() => { loadCandidates() }, [page, sortBy, sortOrder, statusFilter])
 
   async function loadCandidates() {
     setLoading(true)
     try {
-      const res = await getCandidateList({ page, pageSize, sortBy, sortOrder, search: search || undefined })
-      const data = res.data || {}
+      const [listRes, shortlistRes, unreviewedRes] = await Promise.all([
+        getCandidateList({
+          page,
+          pageSize,
+          sortBy,
+          sortOrder,
+          search: search || undefined,
+          status: statusFilter === 'all' ? undefined : statusFilter,
+        }),
+        getCandidateList({ page: 1, pageSize: 1, status: 'shortlisted' }),
+        getCandidateList({ page: 1, pageSize: 1, status: 'unreviewed' }),
+      ])
+
+      const data = listRes.data || {}
       setCandidates(data.candidates || [])
       setTotal(data.total || 0)
+      setShortlistCount(shortlistRes.data?.total || 0)
+      setUnreviewedCount(unreviewedRes.data?.total || 0)
     } catch (err) {
       console.error(err)
     } finally {
@@ -36,14 +55,51 @@ export default function CandidateListPage() {
 
   function handleSearch(e) { e.preventDefault(); setPage(1); loadCandidates() }
 
+  async function handleStatusUpdate(candidateId, nextStatus) {
+    setUpdatingId(candidateId)
+    try {
+      await updateCandidateStatus(candidateId, nextStatus)
+      if (statusFilter !== 'all' && nextStatus !== statusFilter) {
+        await loadCandidates()
+      } else {
+        setCandidates(prev => prev.map(c => c.candidate_id === candidateId ? { ...c, pipeline_status: nextStatus } : c))
+      }
+    } catch (err) {
+      console.error('Failed to update status:', err)
+      window.alert('Failed to update candidate status. Please try again.')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  async function handleDeleteCandidate(candidate) {
+    const candidateName = candidate.full_name || candidate.candidate_id
+    const ok = window.confirm(
+      `Delete ${candidateName} and all related records? This cannot be undone.`
+    )
+    if (!ok) return
+
+    setDeletingId(candidate.candidate_id)
+    try {
+      await deleteCandidate(candidate.candidate_id)
+      if (candidates.length === 1 && page > 1) {
+        setPage(page - 1)
+      } else {
+        await loadCandidates()
+      }
+    } catch (err) {
+      console.error('Failed to delete candidate:', err)
+      window.alert('Failed to delete candidate. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const totalPages = Math.ceil(total / pageSize)
   const si = (f) => sortBy === f ? (sortOrder === 'desc' ? ' ↓' : ' ↑') : ''
 
-  const allCandidates = candidates
-  const shortlisted = allCandidates.filter(c => (c.overall_score || 0) >= 70).length
-  const pending = allCandidates.filter(c => (c.missing_info_count || 0) > 0).length
-  const avgExp = allCandidates.length
-    ? (allCandidates.reduce((s, c) => s + (c.professional_strength || 0), 0) / allCandidates.length).toFixed(1)
+  const avgExp = candidates.length
+    ? (candidates.reduce((s, c) => s + (c.professional_strength || 0), 0) / candidates.length).toFixed(1)
     : '0.0'
 
   function initials(name) {
@@ -60,8 +116,6 @@ export default function CandidateListPage() {
           <p className="page-subtitle">Review and manage {total} professional profiles</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-secondary btn-sm">≡ Filter By ▾</button>
-          <button className="btn btn-secondary btn-sm">↕ Sort: Recent ▾</button>
           <Link to="/processing" className="btn btn-primary btn-sm">+ Import Candidates</Link>
         </div>
       </div>
@@ -70,12 +124,12 @@ export default function CandidateListPage() {
       <div className="cand-stats">
         <div className="cand-stat">
           <div className="label">Active Shortlist</div>
-          <div className="val">{shortlisted}</div>
-          <div className="sub"><span className="up">+11%</span> this week</div>
+          <div className="val">{shortlistCount}</div>
+          <div className="sub">Shortlisted</div>
         </div>
         <div className="cand-stat">
           <div className="label">Pending Reviews</div>
-          <div className="val">{pending}</div>
+          <div className="val">{unreviewedCount}</div>
           <div className="sub">Requires action</div>
         </div>
         <div className="cand-stat">
@@ -90,8 +144,25 @@ export default function CandidateListPage() {
         </div>
       </div>
 
-      {/* Search */}
+      {/* Search + Status Filter */}
       <div className="filter-bar">
+        <div className="status-filter">
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'shortlisted', label: 'Shortlisted' },
+            { id: 'rejected', label: 'Rejected' },
+            { id: 'unreviewed', label: 'Unreviewed' },
+          ].map(option => (
+            <button
+              key={option.id}
+              type="button"
+              className={`btn btn-sm ${statusFilter === option.id ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => { setStatusFilter(option.id); setPage(1) }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
         <form onSubmit={handleSearch} className="input-group" style={{ flex: 1 }}>
           <input
             type="search"
@@ -132,6 +203,7 @@ export default function CandidateListPage() {
                 <th onClick={() => handleSort('overall_score')}>Overall Score{si('overall_score')}</th>
                 <th onClick={() => handleSort('publication_count')}>Publications{si('publication_count')}</th>
                 <th onClick={() => handleSort('completeness_percentage')}>Status{si('completeness_percentage')}</th>
+                <th>Pipeline</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -150,7 +222,7 @@ export default function CandidateListPage() {
                   <td style={{ fontSize: '0.8rem' }}>
                     {c.educational_strength >= 8 ? 'PhD' : c.educational_strength >= 6 ? 'MS / MSc' : c.educational_strength >= 4 ? 'BS / BSc' : 'Other'}
                   </td>
-                  <td>{(c.professional_strength || 0).toFixed(1)}</td>
+                  <td>{((c.total_years_of_experience ?? c.professional_strength) || 0).toFixed(1)}</td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div className="progress-bar" style={{ width: 80 }}>
@@ -168,8 +240,48 @@ export default function CandidateListPage() {
                       {(c.missing_info_count || 0) === 0 ? '✓ Complete' : `${c.missing_info_count} missing`}
                     </span>
                   </td>
-                  <td onClick={e => { e.stopPropagation(); navigate(`/candidates/${c.candidate_id}`) }}>
-                    <button className="btn btn-secondary btn-sm">View →</button>
+                  <td>
+                    <span className={`status-badge ${c.pipeline_status || 'unreviewed'}`}>
+                      {(c.pipeline_status || 'unreviewed').replace(/_/g, ' ')}
+                    </span>
+                  </td>
+                  <td onClick={e => e.stopPropagation()}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => navigate(`/candidates/${c.candidate_id}`)}
+                      >
+                        View →
+                      </button>
+                      <button
+                        className="btn btn-success btn-sm"
+                        disabled={updatingId === c.candidate_id}
+                        onClick={() => handleStatusUpdate(c.candidate_id, 'shortlisted')}
+                      >
+                        Shortlist
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        disabled={updatingId === c.candidate_id}
+                        onClick={() => handleStatusUpdate(c.candidate_id, 'rejected')}
+                      >
+                        Reject
+                      </button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        disabled={updatingId === c.candidate_id}
+                        onClick={() => handleStatusUpdate(c.candidate_id, 'unreviewed')}
+                      >
+                        Clear
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        disabled={deletingId === c.candidate_id}
+                        onClick={() => handleDeleteCandidate(c)}
+                      >
+                        {deletingId === c.candidate_id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -186,7 +298,7 @@ export default function CandidateListPage() {
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(n => (
                 <button key={n} className={page === n ? 'active' : ''} onClick={() => setPage(n)}>{n}</button>
               ))}
-              {totalPages > 5 && <button disabled>…</button>}
+              {totalPages > 5 && <span className="pagination-ellipsis">…</span>}
               {totalPages > 5 && <button onClick={() => setPage(totalPages)}>{totalPages}</button>}
               <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>›</button>
             </div>

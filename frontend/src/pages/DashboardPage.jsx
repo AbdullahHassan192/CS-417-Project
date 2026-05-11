@@ -1,39 +1,46 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { getCandidateList } from '../services/api'
+import { useState, useEffect, useRef } from 'react'
+import { getDashboardStats, getDashboardCharts, uploadCVs } from '../services/api'
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState({ total: 0, candidates: [] })
+  const [stats, setStats] = useState({})
+  const [charts, setCharts] = useState({})
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [uploadResult, setUploadResult] = useState(null)
+  const fileRef = useRef()
 
-  useEffect(() => { loadStats() }, [])
+  useEffect(() => { loadData() }, [])
 
-  async function loadStats() {
+  async function loadData() {
     try {
-      const res = await getCandidateList({ page: 1, pageSize: 1000 })
-      setStats(res.data || { total: 0, candidates: [] })
+      const [statsRes, chartsRes] = await Promise.all([
+        getDashboardStats(),
+        getDashboardCharts(),
+      ])
+      setStats(statsRes.data || {})
+      setCharts(chartsRes.data || {})
     } catch (err) {
-      console.error('Failed to load stats:', err)
+      console.error('Dashboard load error:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  const candidates = stats.candidates || []
-  const totalCandidates = stats.total || 0
-  const avgScore = candidates.length
-    ? (candidates.reduce((s, c) => s + (c.overall_score || 0), 0) / candidates.length).toFixed(1)
-    : '0.0'
-  const shortlistCount = candidates.filter(c => (c.overall_score || 0) >= 70).length
-  const shortlistRatio = totalCandidates ? `1:${Math.round(totalCandidates / Math.max(shortlistCount, 1))}` : '—'
-  const missingCritical = candidates.filter(c => (c.missing_info_count || 0) > 0).length
+  async function handleFileUpload(e) {
+    const files = Array.from(e.target.files).filter((file) => file.name.toLowerCase().endsWith('.pdf'))
+    if (!files.length) return
+    setUploading(true); setUploadResult(null)
+    try {
+      const res = await uploadCVs(files)
+      setUploadResult(res)
+    } catch (err) {
+      console.error('Upload error:', err)
+    } finally {
+      setUploading(false)
+    }
+  }
 
-  const pubData = [
-    { label: 'LinkedIn Jobs', count: candidates.filter(c => c.overall_score >= 80).length * 12, pct: 72 },
-    { label: 'Indeed Career', count: candidates.filter(c => c.overall_score >= 60).length * 8, pct: 55 },
-    { label: 'Glassdoor Direct', count: candidates.filter(c => c.overall_score >= 50).length * 5, pct: 38 },
-    { label: 'External Referrals', count: candidates.filter(c => (c.completeness_percentage || 0) >= 80).length * 3, pct: 22 },
-  ]
+  const scoreData = charts.score_distribution || {}
 
   if (loading) return <div className="loading"><div className="spinner" /></div>
 
@@ -46,50 +53,38 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Top section: Upload widget + Active Monitors */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, marginBottom: 22 }}>
-        {/* CV Upload */}
+      {/* Top section: Upload widget */}
+      <div style={{ marginBottom: 22 }}>
         <div className="card">
           <div className="upload-widget">
             <div className="upload-icon-wrap">☁</div>
-            <h3>CV Upload &amp; Folder Monitoring</h3>
-            <p>Drag resumes here or connect a local folder for<br />real-time indexing and skill parsing.</p>
+            <h3>CV Folder Upload</h3>
+            <p>Select a local folder of PDFs to upload for processing.</p>
             <div className="upload-actions">
-              <Link to="/processing" className="btn btn-primary">📂 Browse Files</Link>
-              <Link to="/processing" className="btn btn-secondary">🔗 Connect Folder</Link>
+              <input
+                type="file"
+                ref={fileRef}
+                multiple
+                accept=".pdf"
+                webkitdirectory="true"
+                directory="true"
+                style={{ display: 'none' }}
+                onChange={handleFileUpload}
+              />
+              <button className="btn btn-primary" onClick={() => fileRef.current.click()} disabled={uploading}>
+                {uploading ? '⏳ Uploading...' : '📂 Browse Folder'}
+              </button>
             </div>
-          </div>
-        </div>
-
-        {/* Active Monitors */}
-        <div className="card">
-          <div className="monitor-header">
-            <span className="card-title">Active Monitors</span>
-            <span className="link-more">++</span>
-          </div>
-          <div className="monitor-item">
-            <div className="folder">
-              <span className="icon">📁</span>
-              <div>
-                <div>Dropbox/Engineering</div>
-                <div className="info">22 new CVs today</div>
+            {uploadResult && (
+              <div className="alert alert-success" style={{ marginTop: 12, textAlign: 'left', width: '100%' }}>
+                <span>✓</span>
+                <div>
+                  <div className="alert-title">Upload Complete</div>
+                  <div style={{ fontSize: '0.8rem' }}>{uploadResult.data?.count || 0} file(s) uploaded</div>
+                </div>
               </div>
-            </div>
-            <div className="dot-green" />
+            )}
           </div>
-          <div className="monitor-item">
-            <div className="folder">
-              <span className="icon">📁</span>
-              <div>
-                <div>Local/Finance_Pool</div>
-                <div className="info">Idle 4h</div>
-              </div>
-            </div>
-            <div className="dot-yellow" />
-          </div>
-          <button className="btn btn-secondary btn-sm" style={{ width: '100%', marginTop: 10, justifyContent: 'center' }}>
-            Configure Automations
-          </button>
         </div>
       </div>
 
@@ -97,65 +92,40 @@ export default function DashboardPage() {
       <div className="stats-row">
         <div className="stat-card">
           <div className="stat-label">Candidate Score Avg</div>
-          <div className="stat-value">{avgScore}</div>
-          <div className="stat-sub"><span className="up">+12%</span> vs last batch</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Shortlist Ratio</div>
-          <div className="stat-value">{shortlistRatio}</div>
-          <div className="stat-sub">Optimal</div>
+          <div className="stat-value">{stats.candidate_score_avg || '0.0'}</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Active Pipeline</div>
-          <div className="stat-value">{totalCandidates}</div>
+          <div className="stat-value">{stats.active_pipeline || 0}</div>
           <div className="stat-sub">Candidates</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Missing Info</div>
-          <div className="stat-value" style={{ color: missingCritical > 0 ? 'var(--clr-danger)' : 'var(--clr-success)' }}>
-            {missingCritical}
-          </div>
-          <div className="stat-sub"><span className="down">Needs action</span></div>
+          <div className="stat-label">Active Jobs</div>
+          <div className="stat-value">{stats.active_jobs || 0}</div>
+          <div className="stat-sub">Open positions</div>
         </div>
       </div>
 
-      {/* Bottom: Publication Breakdowns + Skill Alignment */}
-      <div className="two-col">
-        {/* Publication Breakdowns */}
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
-            <div>
-              <div className="card-title">Publication Breakdowns</div>
-              <div className="card-subtitle">Views vs. Applications per platform</div>
-            </div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--clr-text-muted)' }}>Last 30 Days</span>
+      {/* Bottom: Score Chart */}
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+          <div>
+            <div className="card-title">Score Distribution</div>
+            <div className="card-subtitle">Candidates by score range</div>
           </div>
-          {pubData.map(p => (
-            <div key={p.label} className="pub-row">
-              <span className="pub-label">{p.label}</span>
-              <div style={{ flex: 1 }}>
-                <div className="progress-bar">
-                  <div className="progress-fill blue" style={{ width: `${p.pct}%` }} />
-                </div>
+        </div>
+        {Object.entries(scoreData).map(([range, count]) => (
+          <div key={range} className="pub-row">
+            <span className="pub-label">{range}</span>
+            <div style={{ flex: 1 }}>
+              <div className="progress-bar">
+                <div className={`progress-fill ${range.startsWith('80') ? 'green' : range.startsWith('60') ? 'blue' : 'yellow'}`}
+                  style={{ width: `${Math.min(100, count * 20)}%` }} />
               </div>
-              <span className="pub-count">{p.count} apps</span>
             </div>
-          ))}
-        </div>
-
-        {/* Skill Alignment */}
-        <div className="card">
-          <div className="card-title" style={{ marginBottom: 4 }}>Skill Alignment</div>
-          <div className="card-subtitle" style={{ marginBottom: 16 }}>Core competencies vs. Current pipeline</div>
-          <div style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--clr-text-muted)', marginBottom: 6 }}>TECHNICAL</div>
-          <div className="radar-wrap">
-            <div className="radar-diamond" />
+            <span className="pub-count">{count} candidates</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--clr-text-muted)', marginTop: 8 }}>
-            <span>LEADERSHIP</span><span>EXPERIENCE</span>
-          </div>
-          <div style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--clr-text-muted)', marginTop: 4 }}>EDUCATION</div>
-        </div>
+        ))}
       </div>
     </div>
   )

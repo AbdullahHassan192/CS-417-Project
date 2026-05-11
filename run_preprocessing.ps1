@@ -4,7 +4,7 @@ param(
 
     [string]$OutputDir = ".\\output",
 
-    [string]$Model = "gemini-2.5-flash",
+    [string]$Model = "gemini-3.1-flash-lite-preview",
 
     [switch]$Overwrite
 )

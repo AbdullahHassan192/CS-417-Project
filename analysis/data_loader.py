@@ -26,6 +26,7 @@ def load_csv_safe(file_path: Path) -> pd.DataFrame:
         year_cols = [
             "admission_year", "completion_year", "passing_year",
             "start_year", "end_year", "publication_year", "filing_year",
+            "qs_rank_reported", "the_rank_reported",
         ]
         for col in year_cols:
             if col in df.columns:

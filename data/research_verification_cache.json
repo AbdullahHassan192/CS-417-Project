@@ -1,0 +1,606 @@
+{
+  "||eleventh international conference o": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||international conference on machine": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||the international archives of the p": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||remote sensing letters": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Institute of Electrical and Electronics Engineers",
+    "issn": "1545-598X",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||2024 ieee international humanitaria": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||metrosea2024": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||eusar 2024": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||cbmi 2023": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Institute of Electrical and Electronics Engineers",
+    "issn": "2169-3536",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee geoscience and remote sensing": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Institute of Electrical and Electronics Engineers",
+    "issn": "1545-598X",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||biomedical signal processing and co": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee journal of biomedical and heal": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee access": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Institute of Electrical and Electronics Engineers",
+    "issn": "2169-3536",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee 23rd international multitopic": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||international conference on applied": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||international conference on energy": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||energies": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Multidisciplinary Digital Publishing Institute",
+    "issn": "1996-1073",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||journal": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Elsevier BV",
+    "issn": "0021-9258",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee canadian journal of electrical": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Institute of Electrical and Electronics Engineers",
+    "issn": "0840-8688",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||2017 international renewable and su": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee energy conversion congress and": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||international conference on power e": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee 21st biennial conference on el": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||international journal of applied el": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee journal of emerging and select": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee international conference on el": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||wireless-powered backscatter commun": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||2019 16th international symposium o": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||2020 91st vehicular technology conf": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee wireless communications letter": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||computer communications": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Elsevier BV",
+    "issn": "0140-3664",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee transactions on intelligent tr": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||2015 power generation system and re": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||microelectronics reliability": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Elsevier BV",
+    "issn": "0026-2714",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||sustainability 13 (7), 3709": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||2021 north american power symposium": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||2024 ieee industry applications soc": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||southeastcon 2025": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||progress in electromagnetics resear": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||international journal of integrated": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Ubiquity Press",
+    "issn": "1568-4156",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||international journal of antennas a": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||aeu-international journal of electr": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||plos one": {
+    "verified": true,
+    "source": "openalex",
+    "verification_sources": [
+      "openalex"
+    ],
+    "publisher": "Public Library of Science",
+    "issn": "1932-6203",
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": true,
+    "wos_verified": null,
+    "scopus_verified": null
+  },
+  "||ieee open journal of antennas and p": {
+    "verified": false,
+    "source": null,
+    "verification_sources": [],
+    "publisher": null,
+    "issn": null,
+    "doi": null,
+    "impact_factor": null,
+    "quartile": null,
+    "journal_exists": null,
+    "wos_verified": null,
+    "scopus_verified": null
+  }
+}

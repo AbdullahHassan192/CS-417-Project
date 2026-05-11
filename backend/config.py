@@ -1,5 +1,5 @@
 """
-TALASH M2 - Backend Configuration
+TALASH M3 - Backend Configuration
 
 Manages environment variables and application settings.
 """
@@ -47,6 +47,8 @@ class Settings:
     # API
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
     # Server
     HOST: str = os.getenv("HOST", "0.0.0.0")
@@ -55,6 +57,15 @@ class Settings:
 
     # Frontend
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+    # JWT Auth (M3)
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "talash-m3-secret-key-change-in-prod")
+    JWT_EXPIRE_MINUTES: int = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))
+
+    # Database (M3)
+    DATABASE_URL: str = os.getenv(
+        "DATABASE_URL", f"sqlite:///{_project_root / 'talash.db'}"
+    )
 
 
 settings = Settings()

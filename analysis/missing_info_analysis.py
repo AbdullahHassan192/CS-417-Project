@@ -135,7 +135,8 @@ def detect_missing_information(
         })
     else:
         for _, row in exp_df.iterrows():
-            title = row.get("post_job_title", "Unknown role")
+            title_val = row.get("post_job_title")
+            title = "Unknown role" if _is_missing(title_val) else title_val
             for severity_level, field_map in [
                 ("critical", CRITICAL_FIELDS),
                 ("important", IMPORTANT_FIELDS),
@@ -268,8 +269,6 @@ def draft_missing_info_email(
         lines.append("**Critical Information Required:**")
         for f in critical_fields:
             lines.append(f"  - {f['missing_detail']}")
-            if f.get("impact"):
-                lines.append(f"    (Reason: {f['impact']})")
         lines.append("")
 
     if important_fields:

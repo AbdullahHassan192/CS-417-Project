@@ -39,6 +39,8 @@ TABLE_COLUMNS: dict[str, list[str]] = {
         "score_scale",
         "score_normalized_percentage",
         "score_normalization_basis",
+        "qs_rank_reported",
+        "the_rank_reported",
     ],
     "experience": [
         "candidate_id",
@@ -127,6 +129,14 @@ class EducationItem(BaseModel):
     completion_year: Optional[str] = Field(default=None, description="Completion/end year")
     institution_name: Optional[str] = Field(default=None, description="University/institute")
     board_name: Optional[str] = Field(default=None, description="Board name for school records")
+    qs_rank_reported: Optional[str] = Field(
+        default=None,
+        description="QS rank if confidently known; else 'Not Found'",
+    )
+    the_rank_reported: Optional[str] = Field(
+        default=None,
+        description="THE rank if confidently known; else 'Not Found'",
+    )
 
 
 class ExperienceItem(BaseModel):

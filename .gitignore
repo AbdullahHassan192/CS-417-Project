@@ -23,6 +23,7 @@ dist/
 .ruff_cache/
 .coverage
 htmlcov/
+.extraction_cache.json
 
 # IDE/editor
 .vscode/
@@ -32,7 +33,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Project outputs
+# Project outputs   
 output/
 *.csv
 
@@ -40,5 +41,10 @@ output/
 CVs/
 *.pdf
 
-data/
+# M2: Data outputs
+data/candidates_assessments/
+
+# M2: Frontend
 frontend/node_modules/
+frontend/dist/
+frontend/.vite/

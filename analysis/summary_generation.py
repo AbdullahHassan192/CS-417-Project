@@ -80,7 +80,7 @@ def generate_strengths_and_concerns(
     # ── Evaluate educational strengths/concerns ──
     edu_strength = educational_assessment.get("overall_educational_strength", 0)
     perf_level = educational_assessment.get("academic_performance_level", "unknown")
-    highest = educational_assessment.get("highest_qualification_level", "unknown")
+    highest = educational_assessment.get("highest_qualification_level") or "unknown"
     trend = educational_assessment.get("performance_trend", "variable")
     avg_score = educational_assessment.get("average_score")
 
@@ -222,11 +222,9 @@ def generate_candidate_summary(
     score = overall_score_data["overall_score"]
     tier = overall_score_data["tier"]
 
-    highest_deg = educational_assessment.get(
-        "highest_qualification_level", "N/A"
-    )
+    highest_deg = educational_assessment.get("highest_qualification_level") or "N/A"
     total_exp = employment_assessment.get("total_years_of_experience", 0)
-    exp_level = employment_assessment.get("experience_level", "N/A")
+    exp_level = employment_assessment.get("experience_level") or "N/A"
 
     quick_profile = (
         f"{name} is a {exp_level.replace('_', ' ')} professional "

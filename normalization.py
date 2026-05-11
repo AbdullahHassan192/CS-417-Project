@@ -398,6 +398,8 @@ def flatten_to_relational_rows(result: ExtractionResult) -> dict[str, list[dict]
                 "score_scale": score["score_scale"],
                 "score_normalized_percentage": score["score_normalized_percentage"],
                 "score_normalization_basis": score["score_normalization_basis"],
+                "qs_rank_reported": clean_text(item.qs_rank_reported),
+                "the_rank_reported": clean_text(item.the_rank_reported),
             }
         )
 

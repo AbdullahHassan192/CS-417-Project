@@ -31,8 +31,11 @@ class CandidateListItem(BaseModel):
     overall_tier: str = "below_average"
     educational_strength: float = 0.0
     professional_strength: float = 0.0
+    total_years_of_experience: float = 0.0
+    publication_count: int = 0
     completeness_percentage: float = 0.0
     missing_info_count: int = 0
+    pipeline_status: str = "unreviewed"
     processed_date: Optional[str] = None
 
 
@@ -96,6 +99,18 @@ class EmploymentProfileResponse(BaseModel):
     narrative_summary: str = ""
 
 
+class ResearchProfileResponse(BaseModel):
+    """Research assessment details for M2."""
+    overall_research_strength: float = 0.0
+    total_publications: int = 0
+    total_books: int = 0
+    total_patents: int = 0
+    publications: List[Dict[str, Any]] = []
+    books: List[Dict[str, Any]] = []
+    patents: List[Dict[str, Any]] = []
+    narrative_summary: str = ""
+
+
 class MissingInfoField(BaseModel):
     """Single missing information entry."""
     section: str
@@ -148,6 +163,7 @@ class FullAssessmentResponse(BaseModel):
     score_breakdown: ScoreBreakdown = ScoreBreakdown()
     educational_assessment: EducationalProfileResponse = EducationalProfileResponse()
     employment_assessment: EmploymentProfileResponse = EmploymentProfileResponse()
+    research_assessment: ResearchProfileResponse = ResearchProfileResponse()
     timeline_analysis: TimelineAnalysisResponse = TimelineAnalysisResponse()
     missing_info: MissingInfoResponse = MissingInfoResponse()
     strengths: List[str] = []
@@ -169,6 +185,7 @@ class CandidateSummaryResponse(BaseModel):
     recommendation: str = ""
     educational_narrative: str = ""
     employment_narrative: str = ""
+    research_narrative: str = ""
 
 
 # ── Processing ──────────────────────────────────────────────────────────────
@@ -206,3 +223,8 @@ class SendInfoRequestBody(BaseModel):
     email_subject: Optional[str] = None
     email_body: Optional[str] = None
     recipient: Optional[str] = None
+
+
+class CandidateStatusUpdate(BaseModel):
+    """Request body for POST /api/candidates/{id}/status."""
+    status: str = Field(..., description="Candidate pipeline status")

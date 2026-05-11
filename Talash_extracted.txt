@@ -1,0 +1,762 @@
+Faculty of Computing 
+CS 417: Large Language Models (LLMs) 
+Spring 2026 
+BSDS-2K23 
+ 
+Term Project Description 
+SMART HR RECRUITMENT 
+Talent Acquisition & Learning Automation for Smart Hiring (TALASH) 
+ 
+ 
+CLOs 
+No. Course Learning 
+ Outcomes 
+PLO (CS) BT Level 
+CLO 1 Explain the fundamental concepts, 
+architectures, and training principles of 
+large language models. 
+SO-2 — Knowledge 
+for Solving 
+Computing 
+Problems 
+C-2 (Understand) 
+CLO 2 Compare and select appropriate large 
+language models and configurations for 
+different tasks based on capabilities, 
+constraints, and use cases. 
+SO-5 — Modern Tool 
+Usage 
+C-4 (Analyze) 
+CLO 3 Develop and apply LLM -based 
+solutions for practical NLP problems 
+using suitable interaction and 
+adaptation strategies 
+SO-4 — 
+Design/Development 
+of Solutions 
+C-3 (Apply) 
+CLO 4 Evaluate and improve LLM -based 
+solutions using relevant metrics, 
+testing procedures, and error analysis. 
+SO-3 — Problem 
+Analysis 
+C-5 (Evaluate) 
+    
+ 
+ 
+Instructor:  
+Prof. Dr. Muhammad Moazam Fraz 
+  
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 2 of 18 
+ 
+ 
+Table of Contents 
+1 Introduction ................................................................................................................... 3 
+2 Objectives / Scope ......................................................................................................... 3 
+3 Functional Modules ........................................................................................................ 3 
+3.1 Educational Profile Analysis .................................................................................... 3 
+3.2 Analyze Research Profile ......................................................................................... 6 
+3.3 Student’s Supervision ............................................................................................. 9 
+3.4 Books Authored / Co-Authored (if any) ................................................................... 10 
+3.5 Number of Patents (if any) ..................................................................................... 11 
+3.6 Measure topic variability in the candidate’s publications to understand breadth or 
+focus of research. ............................................................................................................. 12 
+3.7 Perform co-author analysis to identify collaboration patterns. ................................ 12 
+3.8 Professional Experience and Employment History ................................................. 13 
+3.9 Skill Alignment with Job Roles and Research Publications ...................................... 14 
+4 Functional Requirements for Web-Based TALASH Application ....................................... 15 
+5 Dataset ........................................................................................................................ 16 
+6 Project Evaluation and Submission Scheme .................................................................. 16 
+ 
+  
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 3 of 18 
+ 
+1 Introduction 
+Recruitment is one of the most critical processes in any organization, yet it is often time -
+consuming, subjective, and heavily dependent on manual evaluation of resumes and supporting 
+documents. Traditional hiring workflows usually focus on basic keyword m atching and human 
+judgment, which may overlook deeper aspects of a candidate’s academic quality, research 
+output, publication profile, experience consistency, and skill relevance. 
+This project proposes SMART HR RECRUITMENT: Talent Acquisition & Learning Automation for 
+Smart Hiring (TALASH), an AI -powered recruitment support system  focused on University 
+recruitment needs,  built using Large Language Models (LLMs). The system is designed to 
+automate CV screening, candidate -job matching, academic and publication analysis, 
+experience validation, and skill alignment assessment. TALASH aims to assist recruiters in 
+making more informed, evidence-based, and efficient hiring decisions. 
+The project is especially suitable for CS417 – Large Language Models because it applies LLMs to 
+real-world tasks such as document understanding, information extraction, semantic matching, 
+ranking, reasoning, and profile summarization. 
+2 Objectives / Scope 
+The main objective of TALASH is to build an LLM-assisted recruitment system that performs 
+comprehensive candidate evaluation beyond traditional keyword-based filtering. Develop an AI-
+Based CV Screening Engine to parse and rank CVs based on competency alignment and job-
+specific criteria. Analyse candidate’s educational, research and professional experience profile 
+in grounded and quantifiable manner. 
+3 Functional Modules 
+Pre-Processing Module 
+Develop a preprocessing module that parses candidate CVs in PDF format and extracts 
+structured information into an Excel sheet or CSV file in a relational -database-like format. The 
+extracted data should be organized into linked tables or structured fields such as personal 
+information, education, experience, skills, publications, and other relevant profile components. 
+The objective of this task is to convert unstructured CV content into a clean, machine -readable 
+dataset that can serve as the foundation for downstream analysis modules. 
+3.1 Educational Profile Analysis 
+The purpose of this module is to evaluate the candidate’s academic background in a structured, 
+evidence-based, and quantifiable manner. Rather than only recording degree titles, the system 
+will examine the candidate’s educational journey across school, col lege, undergraduate, and 
+postgraduate levels to assess academic performance, progression, institutional quality, and 
+continuity of education. 
+This module is especially important because a candidate’s educational profile provides 
+evidence of academic strength, consistency, specialization, and preparedness for advanced 
+professional or research roles. 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 4 of 18 
+ 
+i. Extraction of SSE and HSSC Performance 
+The system will identify and extract the candidate’s SSE and HSSC academic records from the 
+CV or supporting documents. This includes: 
+• SSE percentage  
+• HSSC percentage  
+• board or institution name, where available  
+• year of completion, where available  
+This information helps assess the candidate’s early academic performance and whether the 
+candidate has demonstrated stable academic achievement across educational stages. 
+ii. Extraction of UG and PG Academic Records 
+The system will extract the candidate’s academic performance at the undergraduate and 
+postgraduate levels, including: 
+• UG marks / CGPA  
+• PG marks / CGPA  
+• degree title  
+• specialization / discipline  
+• university name  
+• year of admission and completion, where available  
+This module will support variations in academic pathways. For example, some candidates may 
+have: 
+• a 14-year BSc degree  
+• followed by a 16-year MSc degree  
+• followed by MS / MPhil 
+while others may have a direct 4-year BS, followed by MS and PhD.  
+The system will therefore identify the actual degree sequence from the candidate’s profile rather 
+than assuming a fixed academic route. 
+iii. Normalization of Marks and CGPA 
+Candidates may report academic results in different forms, such as percentages, CGPA on 
+different scales, grades, or divisions. The system will normalize these representations where 
+possible while preserving the original values. This will support fairer comparison and more 
+consistent interpretation of academic performance. 
+iv. Degree and Institution Extraction 
+The system will identify the candidate’s degree titles and corresponding institutions, particularly 
+at higher education levels, including: 
+• BS  
+• MS / MPhil  
+• PhD  
+• and equivalent undergraduate/postgraduate degrees where applicable  
+For each degree, the system will extract: 
+• degree title  
+• specialization  
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 5 of 18 
+ 
+• institution name  
+• start year  
+• end year  
+• marks / CGPA, where available  
+v. Institutional Quality Assessment using THE and QS Rankings 
+After extracting the institutions, the system will associate them with recognized external ranking 
+sources such as: 
+• Times Higher Education (THE) Rankings https://www.timeshighereducation.com/world-
+university-rankings  
+• QS World University Rankings, where available https://www.topuniversities.com/world-
+university-rankings  
+This helps evaluate the quality and reputation of the institutions attended by the candidate. If a 
+ranking is unavailable, the system will record this transparently rather than making unsupported 
+assumptions. 
+vi. Educational Progression and Consistency 
+The system will analyze the candidate’s academic journey to assess: 
+• progression from school to advanced higher education,  
+• consistency of specialization,  
+• improvement or decline in academic performance,  
+• and continuity in educational development.  
+This helps determine whether the profile reflects a coherent and progressive academic path. 
+vii. Detection of Educational Gaps 
+The system will identify gaps between educational stages, such as: 
+• delay between SSE and HSSC,  
+• delay between HSSC and undergraduate studies,  
+• delay between undergraduate and postgraduate studies,  
+• or long breaks before MS, MPhil, or PhD enrollment.  
+The duration of such gaps will be calculated and flagged for interpretation. 
+viii. Gap Justification using Professional Experience 
+The system will compare educational gaps against documented professional activities such as: 
+• employment history,  
+• teaching experience,  
+• research assistantships,  
+• internships,  
+• freelancing,  
+• consultancy,  
+• entrepreneurship,  
+• or other productive engagements  
+This allows the system to determine whether the educational gap is justified by professional 
+experience or remains unexplained. 
+ix. Educational Strength Interpretation 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 6 of 18 
+ 
+Based on the extracted and enriched information, the system will generate an overall 
+educational assessment reflecting: 
+• academic performance across levels,  
+• highest qualification,  
+• quality of institutions,  
+• academic consistency,  
+• presence and duration of educational gaps,  
+• and whether those gaps are supported by relevant work experience.  
+3.2 Analyze Research Profile 
+The purpose of this module is to evaluate the candidate’s research portfolio in a grounded, 
+evidence-based, and quantifiable manner. Instead of relying only on the total number of 
+publications, the system will examine the quality, legitimacy, visibility, indexing status, 
+authorship contribution, collaboration patterns, supervision record, patents, and books 
+associated with the candidate. This enables a deeper and fairer assessment of the candidate’s 
+academic and research standing. 
+i. Analysis of Journal Publications 
+For each journal paper listed in the candidate’s profile, the system will first identify and verify 
+the publication venue using reliable external sources. The goal is to determine whether the 
+journal is legitimate, recognized, and indexed in reputable databases. 
+The system will extract or identify the journal name, ISSN, paper title, publication year, and list 
+of authors, and then use these details to evaluate the journal on multiple dimensions. 
+a. Journal Legitimacy and Identification 
+The system will determine the authenticity and credibility of the journal by identifying its 
+ISSN and matching it with recognized journal databases. ISSN serves as a unique 
+identifier and helps avoid confusion caused by journals with similar names. This step is 
+important for distinguishing genuine indexed journals from predatory or misleading 
+venues. 
+b. Web of Science (WoS) Indexing Status 
+The system will determine whether the journal is indexed in Web of Science. If the 
+journal is indexed, the system will also retrieve its Impact Factor, where available. This 
+helps evaluate the global visibility and influence of the journal, since WoS-indexed 
+journals are generally considered more reputable in research assessment. 
+c. Scopus Indexing Status 
+The system will determine whether the journal is indexed in Scopus. Scopus indexing 
+indicates that the journal is recognized in a widely used bibliographic database and is 
+often considered a measure of publication legitimacy and academic quality. 
+d. Quartile Ranking 
+The system will identify the journal’s quartile ranking such as Q1, Q2, Q3, or Q4. This 
+provides an additional indicator of the journal’s standing within its subject category. For 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 7 of 18 
+ 
+example, Q1 journals are generally considered stronger and more competitive than 
+lower quartiles. 
+e. Candidate Authorship Role 
+The system will analyze the order of authors and publication metadata to determine the 
+candidate’s role in the paper, specifically whether the candidate is: 
+• First author  
+• Corresponding author  
+• Both first and corresponding author  
+• Some other co-author  
+This is important because authorship position often reflects the level of contribution 
+and leadership in the research work. A first author usually indicates primary 
+contribution, while corresponding author often indicates supervisory or lead 
+responsibility. 
+f. Overall Journal Paper Quality Interpretation 
+Based on the above indicators, the system can produce a structured interpretation of 
+each journal paper. For example, it may indicate whether a paper was published in a 
+highly ranked, indexed journal with strong visibility, or in a lower-tier or unverified venue. 
+This enables a more nuanced evaluation than simply counting the number of journal 
+papers. 
+Useful links 
+https://mjl.clarivate.com/home , https://wos-journal.info/ , 
+https://www.elsevier.com/products/scopus/metrics  
+Do not take journal ranking information from CV, verify it from the sources 
+ii. Analysis of Conference Papers 
+For each conference paper listed in the candidate’s profile, the system will evaluate the quality, 
+recognition, and academic standing of the conference venue. Conference publications are 
+especially important in many fields such as computer science, where top conferences may 
+carry significant research value. 
+The system will identify the conference name, paper title, publication year, authors, and 
+proceedings details, and then assess the overall rank or standing of the conference using 
+recognized conference ranking sources. This helps assess whether the publication appeared in 
+a top-tier, mid-tier, or lower-tier conference venue. 
+a. A* Ranking Status 
+The system will specifically identify whether the conference holds an A* ranking, where 
+such rankings are available. An A* conference is generally considered among the highest 
+quality venues in its domain. This is especially useful for distinguishing highly selective 
+and internationally recognized conferences from ordinary conference proceedings. 
+Useful link: https://portal.core.edu.au/conf-ranks/  
+ 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 8 of 18 
+ 
+b. Maturity of the Conference Series 
+The system will identify the maturity and continuity of the conference by determining 
+its position in the series, such as: 
+• 5th International Conference  
+• 13th Annual Conference  
+• 28th IEEE Conference  
+This indicates whether the conference is a long-running and established venue or a 
+newer and potentially less mature event. Mature conferences often suggest continuity, 
+recognition, and academic stability. 
+d. Indexing and Proceedings Publisher 
+The system will identify whether the conference proceedings are indexed or published in 
+recognized platforms such as: 
+• Scopus  
+• IEEE Xplore  
+• Springer  
+• ACM  
+• or other reputable indexing and publishing sources  
+This helps establish the visibility and legitimacy of the conference paper. A paper 
+included in well-known indexed proceedings is generally more credible and accessible 
+than one in an obscure or non-indexed source. 
+Useful link: https://scholar.google.com/intl/en/scholar/metrics.html  
+e. Candidate Authorship Role 
+The system will determine the candidate’s contribution role in the conference paper by 
+identifying whether the candidate is: 
+• First author  
+• Corresponding author  
+• Both first and corresponding author  
+• Some other co-author  
+This provides insight into whether the candidate led the work, supervised it, or 
+contributed as part of a team. 
+f. Overall Conference Paper Quality Interpretation 
+Using the venue rank, A* status, maturity, indexing status, and authorship role, the 
+system will generate a structured assessment of the quality of each conference paper. 
+This allows evaluators to identify whether the candidate has published in highly reputed 
+conferences, moderately ranked venues, or less established events. 
+Why This Research Profile Analysis Is Important 
+This research profile analysis is important because publication count alone does not reflect 
+actual research strength. Two candidates may have the same number of papers, but the quality 
+of venues, indexing status, quartile, conference maturity, and authorship roles may be very 
+different. By analyzing these factors, the system can provide a much more reliable and fair 
+assessment of the candidate’s academic and research contributions. 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 9 of 18 
+ 
+3.3 Student’s Supervision 
+This part of the research profile analysis is intended to evaluate the candidate’s academic 
+mentoring and supervisory contribution, especially at the postgraduate level. Supervision of MS 
+and PhD students is an important indicator of research leadership, academic maturity, and 
+contribution to capacity building in higher education. 
+The system will identify and analyze the candidate’s role in supervising research students and 
+quantify this contribution in a structured manner. 
+a. Number of MS / PhD Students Supervised as Main Supervisor 
+The system will determine how many MS and PhD students have been supervised by the 
+candidate in the role of main supervisor. This reflects the candidate’s primary responsibility in 
+guiding student research, including topic definition, research direction, monitoring progress, 
+and thesis completion. 
+A higher number of students supervised as main supervisor may indicate: 
+• stronger academic leadership,  
+• greater trust placed in the candidate by the institution,  
+• and more substantial experience in directing independent research.  
+b. Number of MS / PhD Students Supervised as Co-Supervisor 
+The system will also identify how many MS and PhD students the candidate has supervised as a 
+co-supervisor. Co-supervision reflects collaborative mentoring and support provided alongside 
+another principal supervisor. This helps capture additional supervisory contribution that may 
+not appear under the main supervision role. 
+This distinction between main supervision and co-supervision is important because it shows 
+whether the candidate primarily leads student research or contributes in a supporting 
+supervisory capacity. 
+c. Publications Produced with Supervised Students 
+The system will analyze how many research papers have been co-authored by the candidate 
+together with his or her supervised students. This helps assess whether supervision has 
+resulted in measurable scholarly output, which is often a strong sign of effective research 
+mentorship. 
+For each such paper, the system will determine: 
+• whether the paper includes the supervised student(s),  
+• the total number of papers produced with students,  
+• whether the candidate is the corresponding author,  
+• the author sequence number of the candidate,  
+• and the overall authorship pattern between supervisor and student.  
+This analysis is important because it helps answer questions such as: 
+• Does the candidate actively publish with supervised students?  
+• Does the candidate appear as corresponding author, suggesting leadership or senior 
+responsibility?  
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 10 of 18 
+ 
+• Is the candidate usually listed before or after the student, indicating possible 
+supervisory conventions?  
+• How strong is the candidate’s contribution to student research productivity?  
+This supervision analysis provides evidence of the candidate’s research mentorship, 
+supervisory engagement, and academic leadership. However, this information is usually not 
+provided in the CV . Candidates can be asked to provide their supervised / co-supervised MS/PD 
+student names and years of graduation (if any) 
+3.4 Books Authored / Co-Authored (if any) 
+This part of the analysis is intended to evaluate the candidate’s contribution to scholarly writing, 
+academic dissemination, and authorship of long -form research or educational material. Books 
+and book authorship often indicate domain expertise, academic s tanding, and sustained 
+contribution to knowledge dissemination. 
+The system will identify books authored or co -authored by the candidate and extract relevant 
+publication details. 
+a. Book Metadata Extraction 
+For each book associated with the candidate, the system will extract: 
+• Book Name  
+• Authors  
+• ISBN  
+• Publisher  
+• Publishing Year  
+• Online link  
+These details help establish the identity, authenticity, and bibliographic validity of the book. 
+b. Authorship Role 
+The system will determine whether the candidate is: 
+• sole author,  
+• lead author,  
+• co-author,  
+• or one of several contributing authors.  
+This distinction is useful because it reflects the scale of the candidate’s contribution to the 
+book. 
+c. Publisher Credibility and Scholarly Value 
+By identifying the publisher and publication year, the system can help estimate the scholarly 
+relevance and credibility of the book. Books published through recognized academic or 
+professional publishers may carry stronger value in academic and professional evaluation. 
+d. Verification and Accessibility 
+The inclusion of an online link allows evaluators to verify the existence of the book and access 
+more details about the publication. This adds transparency and supports evidence-based 
+assessment. 
+e. Importance in Candidate Assessment 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 11 of 18 
+ 
+Books authored or co-authored by a candidate may indicate: 
+• strong subject expertise,  
+• contribution to teaching and curriculum,  
+• leadership in a research area,  
+• and broader academic influence beyond journal and conference publications. 
+ 
+3.5 Number of Patents (if any) 
+This component is intended to evaluate the candidate’s innovation, applied research 
+contribution, and intellectual property output. Patents are an important research and 
+professional indicator because they show whether the candidate’s work has resulted in novel, 
+protectable, and potentially industry-relevant outcomes. 
+The system will identify patents associated with the candidate and extract structured 
+information for each patent. 
+a. Patent Identification 
+For each patent associated with the candidate, the system will extract: 
+• Patent Number  
+• Patent Title  
+• Date  
+• Innovators / Inventors  
+• Country of Filing  
+• Online verification link  
+This information helps verify the authenticity and relevance of the patent record. 
+b. Patent Contribution Analysis 
+The system may also analyze the candidate’s role among the listed innovators or inventors, 
+where possible, to determine whether the candidate appears as: 
+• lead inventor,  
+• co-inventor,  
+• or contributing innovator.  
+This provides further evidence of the candidate’s contribution to applied innovation. 
+c. Verification and Credibility 
+The inclusion of an online verification link is especially important to ensure that the patent can 
+be validated through an official or publicly accessible patent database. This reduces the risk of 
+unverifiable or incomplete claims and supports grounded evaluation. 
+d. Importance in Candidate Assessment 
+Patent analysis helps answer questions such as: 
+• Has the candidate produced any patentable innovation?  
+• Are the candidate’s contributions limited to academic publications, or do they also 
+include applied invention?  
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 12 of 18 
+ 
+• Does the candidate demonstrate research translation into practical or commercial 
+outcomes?  
+3.6 Measure topic variability in the candidate’s publications to 
+understand breadth or focus of research.  
+The system should analyze the subjects, themes, and research areas covered across all of a 
+candidate’s publications and determine whether the candidate has worked in a highly focused 
+research domain or has published across multiple diverse areas. 
+In practical terms, the system should: 
+o extract keywords, titles, abstracts, venues, and research domains from the candidate’s 
+papers, 
+o group publications into thematic clusters such as machine learning, computer vision, 
+networks, software engineering, cybersecurity, HR analytics, etc., 
+o measure how concentrated or dispersed the publications are across these clusters, 
+o identify the candidate’s core area of specialization, 
+o and estimate the degree of topical diversity in the research profile. 
+This objective helps answer questions such as: 
+▪ Is the candidate a specialist with deep work in one narrow domain? 
+▪ Is the candidate an interdisciplinary researcher publishing in several related or 
+unrelated areas? 
+▪ Has the candidate’s research focus remained stable over time, or has it shifted 
+significantly? 
+A candidate with low topic variability may show strong depth and consistency in one area, while 
+a candidate with high topic variability may show breadth, adaptability, and interdisciplinary 
+exposure. 
+The output of this module may include: 
+o major research themes of the candidate, 
+o percentage of publications in each theme, 
+o dominant topic area, 
+o diversity score or variability score, 
+o trend of topic changes over time. 
+3.7 Perform co-author analysis to identify collaboration patterns. 
+The system will analyze publication co-authorship data to identify collaboration patterns, 
+including recurring collaborators, collaboration network size, authorship structure, and possible 
+student-supervisor relationships. This analysis will help assess the candidate’s research 
+connectivity, teamwork profile, and collaboration diversity. 
+ 
+In practical terms, the system should: 
+o extract the list of co-authors from each publication,  
+o identify repeated collaborators,  
+o count how often the same co-authors appear,  
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 13 of 18 
+ 
+o distinguish between one-time and long-term collaborations,  
+o examine whether the candidate usually works in small teams or large groups,  
+o and identify whether the collaborations are mostly internal, external, national, or 
+international, where such information is available.  
+This objective helps answer questions such as: 
+▪ Does the candidate frequently collaborate with the same research group, suggesting a 
+stable research network?  
+▪ Does the candidate collaborate with a wide range of authors, indicating broader 
+academic reach?  
+▪ Is the candidate usually leading the collaboration, or mostly contributing within a group?  
+▪ Are there strong supervision-related collaborations with students?  
+▪ Is the candidate engaged in cross-institutional or interdisciplinary collaboration?  
+The co-author analysis can provide indicators such as: 
+o total number of unique co-authors,  
+o most frequent collaborators,  
+o average number of co-authors per paper,  
+o collaboration network size,  
+o proportion of papers with recurring collaborators,  
+o possible student-supervisor collaboration patterns,  
+o and collaboration diversity score.  
+3.8 Professional Experience and Employment History 
+The purpose of this module is to evaluate the candidate’s professional profile, employment 
+continuity, career progression, and skill relevance in a structured and evidence-based manner. 
+Rather than only listing past job titles, the system will analyze whether the candidate’s 
+employment record is chronologically consistent, whether the candidate demonstrates steady 
+professional growth, and whether the skills claimed in the CV are supported by actual work 
+roles and research output. 
+i. Timeline Consistency Analysis 
+This component will examine the dates associated with the candidate’s education and 
+employment history to identify inconsistencies, overlaps, and unexplained gaps. 
+The system will extract job titles, organizations, start dates, end dates, employment type, and 
+education periods, and then analyze the profile for the following: 
+• Overlap between Education and Employment: 
+The system will identify whether any professional experience overlaps with periods of 
+formal education. Such overlaps are not always problematic, since candidates may 
+work during their studies, but they need to be detected and interpreted properly. For 
+example, a full-time job overlapping with a full-time degree may require closer scrutiny, 
+while part-time teaching or research assistantship during MS/PhD may be reasonable.  
+• Overlap between Multiple Jobs: 
+The system will detect whether two or more professional positions overlap in time. This 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 14 of 18 
+ 
+helps identify whether the candidate held concurrent roles, consulting assignments, 
+academic appointments, or potentially inconsistent claims in the CV .  
+• Professional Gaps: 
+The system will identify periods where the candidate appears to have no recorded 
+employment after completion of education or between two jobs. It will calculate the 
+duration of these gaps and flag them for interpretation.  
+• Gap Justification: 
+Where possible, the system will determine whether professional gaps are explained by 
+other productive activities such as higher education, research, freelancing, training, 
+entrepreneurship, consultancy, or family/personal leave if explicitly stated in the profile.  
+• Career Continuity and Progression: 
+The system will also examine whether the candidate’s work history shows a logical and 
+progressive trajectory, such as movement from junior to senior roles, from research 
+assistantship to faculty position, or from technical execution to management and 
+leadership responsibilities.  
+This analysis helps evaluators answer questions such as: 
+o Is the candidate’s career timeline internally consistent?  
+o Are there unexplained employment gaps?  
+o Are overlapping roles legitimate or suspicious?  
+o Does the candidate demonstrate career progression and professional maturity?  
+If some information is missing, draft an email to ask the information from the candidate. 
+3.9 Skill Alignment with Job Roles and Research Publications 
+This component is intended to verify whether the skills claimed in the CV are genuinely 
+supported by the candidate’s academic, research, and professional record. Many CVs list broad 
+technical and professional skills, but not all of them are backed by actual evidence. This 
+module helps make that distinction. 
+The system will compare the skills listed in the CV with: 
+o the candidate’s job titles and job responsibilities,  
+o the candidate’s research publications and research themes,  
+o and the target job description where applicable.  
+The analysis will focus on the following: 
+• Skill-to-Experience Alignment: 
+The system will determine whether the candidate’s professional roles provide evidence 
+for the claimed skills. For example, if a candidate claims project management, machine 
+learning, curriculum design, software development, or data analysis skills, the system 
+will look for evidence of these skills in job titles, job descriptions, and career history.  
+• Skill-to-Publication Alignment: 
+The system will examine whether the claimed technical or research-oriented skills are 
+supported by the topics, methods, and domains reflected in the candidate’s 
+publications. For example, a candidate claiming expertise in natural language 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 15 of 18 
+ 
+processing or cybersecurity should ideally have publications, projects, or research 
+outputs related to those areas.  
+• Skill Consistency Across Profile: 
+The system will assess whether the same skills appear consistently across education, 
+work experience, research output, projects, and certifications, or whether they are 
+mentioned only once without supporting evidence.  
+• Job Relevance of Skills: 
+When a target position is provided, the system will compare the candidate’s evidenced 
+skills against the skills required by the job description. This helps determine whether the 
+candidate’s profile is closely aligned, partially aligned, or weakly aligned with the 
+position.  
+• Strength of Skill Evidence: 
+The system may classify skills into categories such as:  
+o strongly evidenced,  
+o partially evidenced,  
+o weakly evidenced,  
+o or unsupported.  
+This analysis helps evaluators answer: 
+o Are the candidate’s claimed skills credible?  
+o Are the skills supported by actual work and research?  
+o Which skills are central strengths, and which appear overstated?  
+o How relevant are the candidate’s skills to the target role? 
+4 Functional Requirements for Web-Based TALASH 
+Application 
+A web application shall be developed for candidate profile analysis and recruitment support.  
+1. CV Upload and Folder Monitoring 
+The system shall allow CVs to be uploaded to a designated folder/repository. 
+The application shall automatically read all uploaded CV files from that folder.  
+2. Automatic CV Parsing and Candidate Analysis Engine 
+The system shall extract structured information from each CV , including education, 
+experience, skills, publications, supervision, patents, and books, where available. The 
+system shall automatically perform educational, research, and professional profile analysis 
+for each candidate based on the defined TALASH criteria.  
+3. Graphical Dashboard 
+The system shall provide graphical visualizations such as charts, score summaries, 
+publication breakdowns, gap analysis, and skill alignment views.  
+The system shall present analyzed candidate information in tabular format for structured 
+comparison and review. 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 16 of 18 
+ 
+The system shall generate a concise candidate summary at the end of the analysis, 
+highlighting key strengths, concerns, suitability, and overall profile interpretation.  
+4. Missing Information Detection 
+The system shall detect missing, incomplete, or unclear information in the CV , such as 
+absent academic scores, incomplete dates, missing publication details, or unclear 
+authorship roles.  
+If required information is missing from a candidate’s CV , the system shall draft an email 
+requesting the missing details and asking the candidate to provide an updated CV .  
+If multiple candidates have missing information, the system shall generate separate, 
+individualized, and personalized draft emails for each candidate.  
+5 Dataset 
+Sample CVs are available at this link. (uses seecs email IDs) 
+6 Project Evaluation and Submission Scheme 
+MILESTONE WEIGHT 
+MILESTONE 1 25% 
+MILESTONE 2 25% 
+MILESTONE 3 50% 
+ 
+Common Submission Instructions 
+For each milestone, every group must submit: 
+• Updated report on LMS  
+• Updated presentation slides on LMS  
+• Updated code on the group’s GitHub repository  
+• Running demo during evaluation  
+Demo Procedure 
+Each group will: 
+1. Give a brief presentation  
+2. Show a live demo  
+3. Answer questions/viva  
+GitHub Requirement 
+The GitHub repository must be consistently updated throughout the semester. Continuous 
+progress is expected; last-minute bulk uploads will be penalized. 
+Milestone 1: Proposal, Architecture, Wireframes, Early Prototype 
+Expected Work and Minimum demo Expectation 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 17 of 18 
+ 
+• Completed Preprocessing Module 
+• System architecture and technical design  
+• Module interaction and data flow  
+• Folder-based CV ingestion design  
+• LLM/NLP pipeline design  
+• Database/storage design  
+• UI/UX wireframes  
+• Early prototype with basic upload/read flow  
+• Preliminary extraction from 1–2 CVs  
+ 
+Evaluation Rubric 
+Criterion Marks 
+System architecture and technical design 4 
+UI/UX wireframes and design thinking 4 
+Completed Pre-Processing Module Early prototype progress 12 
+Running demo 5 
+Total 25 
+ 
+Milestone 2: Core Extraction, Analysis Pipeline, Intermediate Web App  
+Expected Work and Minimum demo Expectation 
+• Working CV ingestion pipeline  
+• Folder-based reading of uploaded CVs  
+• CV parsing and structured extraction  
+• Functional implementation of:  
+o Educational Profile Analysis  
+o Professional Experience and Employment History  
+o Missing information detection  
+o Initial candidate summary generation  
+• Partial Research Profile processing  
+• Tabular outputs  
+• Initial charts/graphs  
+• Personalized draft emails for missing information  
+Evaluation Rubric 
+Criterion Marks 
+CV parsing and structured extraction 6 
+Educational profile analysis 5 
+Professional experience analysis 4 
+Missing-information detection and personalized email drafting 4 
+Intermediate web application functionality 6 
+Total 25 
+ 
+ 
+ 
+
+CS 417 : Large Language Models, Spring 2026; Term Project Description 
+Page 18 of 18 
+ 
+Milestone 3: Full Integrated System, Final Report, Live Demo 
+Expected Work and Minimum demo Expectation 
+• Complete working web application  
+• Full implementation of all functional modules  
+• Folder-based CV processing for multiple candidates  
+• Candidate-wise tabular outputs  
+• Graphical dashboard and comparative views  
+• Candidate summary generation  
+• Personalized missing-information email drafting  
+• End-to-end integration  
+Evaluation Rubric 
+ Criterion Marks 
+demo Completion of functional modules 30 
+Candidate assessment report and summary generation 6 
+Tabular and graphical presentation 6 
+Web application integration and reliability, UI UX, inductivity 8 
+ Total 50 
+ 
+Functional Modules Breakdown (30 Marks) 
+Sub-Criterion Marks 
+Educational Profile Analysis 6 
+Research Profile Analysis: journals and conferences 7 
+Topic variability and co-author analysis 6 
+Student supervision, patents, and books 5 
+Professional experience and employment history 6 
+Total 30 
+ 
+Extra Credit:  
+Devise and implement a full-scale quantifiable candidate ranking module in the system 
+Late Submission Policy: 
+⎯ Submissions made within 48 hours after the deadline will incur a 50% penalty.  
+⎯ Submissions received after 48 hours of the deadline will not be accepted. (for 
+whatever reasons), so plan accordingly 
+ 
